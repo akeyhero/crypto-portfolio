@@ -128,10 +128,25 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
         (function () {
             var dispatcher = riot.observable();
             var data = <?= $data ?>;
+            var sessionManager = new SessionManager();
 
             riot.mount('app', {
                 initial_data: data,
-                dispatcher: dispatcher
+                dispatcher: dispatcher,
+                sessionManager: sessionManager
+            });
+
+            new LocalStorage().getItem('storage_type', function (storageType) {
+                if (storageType === 'firebase') {
+                    var unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
+                        if (user) {
+                            sessionManager.setStorage(new Firestore('portfolios', user.uid));
+                            unsubscribe();
+                        }
+                    });
+                } else {
+                    sessionManager.setStorage(new LocalStorage());
+                }
             });
         })();
     </script>

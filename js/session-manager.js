@@ -53,8 +53,9 @@
 (function (undefined) {
     'use strict';
 
-    window.SessionManager = function (storage) {
-        this.storage = storage;
+    window.SessionManager = function () {
+        this.storage = null;
+        this.onStorageChangedEvents = [];
     }
 
     SessionManager.prototype.getSession = function (callback) {
@@ -63,6 +64,7 @@
                 this.getSessionV1AsV2(function (session_v1_as_v2) {
                     callback(session_v1_as_v2 || {portfolio: []});
                 });
+                return;
             }
             callback(session_v2 || {portfolio: []});
         }.bind(this));
@@ -130,4 +132,18 @@
 
         this.storage.setItem('store_v2', session, callback);
     };
+
+    SessionManager.prototype.setStorage = function (storage, callback) {
+        this.storage = storage;
+        this.onStorageChangedEvents.forEach(function (event) { event(storage) });
+        callback && callback();
+    }
+
+    SessionManager.prototype.onStorageChanged = function (callback) {
+        this.onStorageChangedEvents.push(callback);
+    }
+
+    SessionManager.prototype.clearOnStorageChanged = function () {
+        this.onStorageChangedEvents = [];
+    }
 })(void 0);

@@ -628,38 +628,23 @@
             opts.dispatcher.trigger('modal-show[' + item.uid + ']', item)
         }
 
-        this.setSessionManager = function (storageType, onChanged) {
-            onChanged = onChanged.bind(this);
-            if (storageType === 'firebase') {
-                var unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
-                    if (user) {
-                        this.sessionManager = new SessionManager(new Firestore('portfolios', user.uid));
-                        onChanged();
-                        unsubscribe();
-                    }
-                }.bind(this));
-            } else {
-                this.sessionManager = new SessionManager(new LocalStorage());
-                onChanged();
-            }
-        }.bind(this);
-
         this.portfolio = [];
         this.raw_data = opts.initial_data;
         this.currency_data = indexMarketDataById(opts.initial_data);
+        this.sessionManager = opts.sessionManager;
 
         this.on('mount', this.updatePageTitle);
         this.on('updated', this.updatePageTitle);
 
-        new LocalStorage().getItem('storage_type', function (storageType) {
-            this.setSessionManager(storageType, function () {
-                getPortfolioFromSession(this.sessionManager, this.currency_data, function (portfolio) {
-                    this.portfolio = portfolio;
-                    this.update();
-                    this.startAutoUpdate();
-                }.bind(this));
-            });
+        this.sessionManager.onStorageChanged(function (storage) {
+            getPortfolioFromSession(this.sessionManager, this.currency_data, function (portfolio) {
+                this.portfolio = portfolio;
+                this.update();
+            }.bind(this));
         }.bind(this));
+
+        // 厳密には setStorage を待つべきだが、時間的猶予が十分あると判断する
+        this.startAutoUpdate();
     </script>
 
 </app>
