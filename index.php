@@ -169,9 +169,12 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
                 sessionManager: sessionManager
             });
 
-            new LocalStorage().getItem('storage_type', function (storageType) {
-                setStorage(storageType);
-            });
+            // マウントを待つためちょっと遅らせる
+            setTimeout(function () {
+                new LocalStorage().getItem('storage_type', function (storageType) {
+                    setStorage(storageType);
+                });
+            }, 100);
 
             document.getElementById('use-local-storage').addEventListener('click', function (event) {
                 setStorage('localStorage');
