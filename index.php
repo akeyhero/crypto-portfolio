@@ -68,6 +68,10 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
             -webkit-text-size-adjust: 100%;
         }
 
+        .storage-selection-area {
+            text-align: center;
+        }
+
         .auth-area {
             text-align: center;
         }
@@ -121,6 +125,22 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
 
     <app></app>
 
+    <div class="storage-selection-area">
+        <h3>ストレージ変更</h3>
+        <button type="button" class="c-button c-button--ghost u-xsmall" id="use-local-storage">オフライン</button>
+        <button type="button" class="c-button c-button--ghost u-xsmall" id="use-firebase">オンライン</button>
+        <h3>データコピー</h3>
+        <button type="button" class="c-button c-button--ghost u-xsmall" id="copy-offline-to-online">オフライン→オンライン</button>
+        <button type="button" class="c-button c-button--ghost u-xsmall" id="copy-online-to-offline">オンライン→オフライン</button>
+    </div>
+
+    <div class="auth-area">
+        <h3>ログイン</h3>
+        <div id="firebase-auth-message"></div>
+        <div id="firebase-auth-sign-out"></div>
+        <div id="firebaseui-auth-container"></div>
+    </div>
+
     <script src="tag/modal.html" type="riot/tag"></script>
     <script src="tag/app.html" type="riot/tag"></script>
 
@@ -130,13 +150,7 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
             var data = <?= $data ?>;
             var sessionManager = new SessionManager();
 
-            riot.mount('app', {
-                initial_data: data,
-                dispatcher: dispatcher,
-                sessionManager: sessionManager
-            });
-
-            new LocalStorage().getItem('storage_type', function (storageType) {
+            var setStorage = function (storageType) {
                 if (storageType === 'firebase') {
                     var unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
                         if (user) {
@@ -147,14 +161,67 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH
                 } else {
                     sessionManager.setStorage(new LocalStorage());
                 }
+            };
+
+            riot.mount('app', {
+                initial_data: data,
+                dispatcher: dispatcher,
+                sessionManager: sessionManager
+            });
+
+            new LocalStorage().getItem('storage_type', function (storageType) {
+                setStorage(storageType);
+            });
+
+            document.getElementById('use-local-storage').addEventListener('click', function (event) {
+                setStorage('localStorage');
+                new LocalStorage().setItem('storage_type', 'localStorage');
+            });
+            document.getElementById('use-firebase').addEventListener('click', function (event) {
+                setStorage('firebase');
+                new LocalStorage().setItem('storage_type', 'firebase');
+            });
+            document.getElementById('copy-offline-to-online').addEventListener('click', function (event) {
+                if (! confirm('オンラインのデータは削除されます。よろしいですか？')) {
+                    return;
+                }
+                var unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
+                    if (user) {
+                        var localMan = new SessionManager();
+                        var storeMan = new SessionManager();
+                        localMan.setStorage(new LocalStorage());
+                        storeMan.setStorage(new Firestore('portfolios', user.uid));
+                        localMan.getSession(function (session) {
+                            storeMan.saveSession(session.portfolio);
+                        });
+                        unsubscribe();
+                        alert('移行完了しました。オフラインモードに切り替えます。');
+                        setStorage('localStorage');
+                        new LocalStorage().setItem('storage_type', 'localStorage');
+                    }
+                });
+            });
+            document.getElementById('copy-online-to-offline').addEventListener('click', function (event) {
+                if (! confirm('オフラインのデータは削除されます。よろしいですか？')) {
+                    return;
+                }
+                var unsubscribe = firebase.auth().onAuthStateChanged(function (user) {
+                    if (user) {
+                        var localMan = new SessionManager();
+                        var storeMan = new SessionManager();
+                        localMan.setStorage(new LocalStorage());
+                        storeMan.setStorage(new Firestore('portfolios', user.uid));
+                        storeMan.getSession(function (session) {
+                            localMan.saveSession(session.portfolio);
+                        });
+                        unsubscribe();
+                        alert('移行完了しました。オンラインモードに切り替えます。');
+                        setStorage('firebase');
+                        new LocalStorage().setItem('storage_type', 'firebase');
+                    }
+                });
             });
         })();
     </script>
-
-    <div class="auth-area">
-        <div id="firebase-auth-message"></div>
-        <div id="firebase-auth-sign-out"></div>
-        <div id="firebaseui-auth-container"></div>
-    </div>
 </body>
 </html>
