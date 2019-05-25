@@ -501,6 +501,16 @@
                     var currency = currency_data[item.currency];
 
                     if (!currency) {
+                        let key = convertCoinMarketCapToCoinPaprika(item.currency, currency_data);
+                        if (!key) {
+                            const symbol = window.prompt(item.currency + 'が見つかりませんでした。シンボルを入力してください。')
+                            key = convertSymbolToCoinPaprika(symbol, currency_data);
+                        }
+                        currency = currency_data[key];
+                    }
+
+                    if (!currency) {
+                        window.alert(item.currency + 'が見つかりませんでした。')
                         return;
                     }
 
@@ -515,6 +525,25 @@
 
                 callback(portfolio.sort(sortBySymbol));
             });
+        }
+
+        function convertCoinMarketCapToCoinPaprika(cmcName, currency_data) {
+            for (const key of Object.keys(currency_data)) {
+                const suffix = key.split('-').slice(1).join('-');
+                if (cmcName === suffix) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        function convertSymbolToCoinPaprika(symbol, currency_data) {
+            for (const key of Object.keys(currency_data)) {
+                if (symbol === currency_data[key].symbol) {
+                    return key;
+                }
+            }
+            return null;
         }
 
         this.getCurrencyList = function () {
