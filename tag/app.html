@@ -40,7 +40,7 @@
                             <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ currency_data[currency].name } ({ currency_data[currency].symbol })</a>
                         </td>
                         <td class="price-btc">{ currency_data[currency].quotes.BTC.price }</td>
-                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { with_jp_prefix: true, significant_figures: 3 }) } { convert }</td>
+                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { significant_figures: 3 }) } { convert }</td>
                         <td class="change-week"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_7d >= 0, minus: currency_data[currency].quotes[convert].percent_change_7d < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_7d, 2) }%</span></td>
                         <td class="change-day"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_24h >= 0, minus: currency_data[currency].quotes[convert].percent_change_24h < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_24h, 2) }%</span></td>
                         <td class="balance"><input type="number" class="balance-input" value="{ balance }" oninput="{ updateBalance }"></td>
@@ -54,7 +54,7 @@
                     <tr>
                         <th colspan="6">合計</th>
                         <td class="total">
-                          { number_format(calculateTotal(portfolio), 0, { with_jp_prefix: true }) } { convert }
+                          { number_format(calculateTotal(portfolio), 0) } { convert }
                         </td>
                         <td colspan="3" class="total">
                           { number_format(calculateTotal(portfolio, 'BTC'), 8) } BTC
@@ -79,7 +79,7 @@
                         <td class="currency">
                             <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ currency_data[currency].symbol }</a>
                         </td>
-                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { with_jp_prefix: true, significant_figures: 3 }) }</td>
+                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { significant_figures: 3 }) }</td>
                         <td class="change-day"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_24h >= 0, minus: currency_data[currency].quotes[convert].percent_change_24h < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_24h, 2) }%</span></td>
                         <td class="subtotal">{ number_format(balance * currency_data[currency].quotes[convert].price) }</td>
                         <td class="detail">
@@ -97,7 +97,7 @@
                                     </tr>
                                     <tr>
                                         <th>価格({ convert })</th>
-                                        <td class="price-jpy">{ number_format(opts.data.quotes[opts.convert].price, 0, { with_jp_prefix: true, significant_figures: 3 }) }</td>
+                                        <td class="price-jpy">{ number_format(opts.data.quotes[opts.convert].price, 0, { significant_figures: 3 }) }</td>
                                     </tr>
                                     <tr>
                                         <th>上昇率(7日間)</th>
@@ -133,7 +133,7 @@
                     <tr>
                         <th colspan="3">合計</th>
                         <td colspan="2">
-                          { number_format(calculateTotal(portfolio), 0, { with_jp_prefix: true }) }円<br />
+                          { number_format(calculateTotal(portfolio), 0) }円<br />
                           { number_format(calculateTotal(portfolio, 'btc'), 0, { significant_figures: 5 }) } BTC
                         </td>
                     </tr>
