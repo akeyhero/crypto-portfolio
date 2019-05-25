@@ -96,7 +96,7 @@
                                         <td class="price-btc">{ opts.data.quotes.BTC.price }</td>
                                     </tr>
                                     <tr>
-                                        <th>価格({ convert })</th>
+                                        <th>価格({ opts.convert })</th>
                                         <td class="price-jpy">{ number_format(opts.data.quotes[opts.convert].price, 0, { significant_figures: 3 }) }</td>
                                     </tr>
                                     <tr>
@@ -133,8 +133,8 @@
                     <tr>
                         <th colspan="3">合計</th>
                         <td colspan="2">
-                          { number_format(calculateTotal(portfolio), 0) }円<br />
-                          { number_format(calculateTotal(portfolio, 'btc'), 0, { significant_figures: 5 }) } BTC
+                          { number_format(calculateTotal(portfolio), 0) } { opts.convert }<br />
+                          { number_format(calculateTotal(portfolio, 'BTC'), 0, { significant_figures: 5 }) } BTC
                         </td>
                     </tr>
                 </tfoot>
