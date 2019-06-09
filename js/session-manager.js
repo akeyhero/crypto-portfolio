@@ -125,6 +125,7 @@
         portfolio.forEach(function (item) {
             session.portfolio.push({
                 currency: item.currency,
+                symbol: item.symbol,
                 balance: item.balance,
                 memo: item.memo
             });

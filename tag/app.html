@@ -1,4 +1,3 @@
-
 <app>
     <div class="overlay mobile-only" onclick={ toggleSidebar }></div>
 
@@ -37,15 +36,15 @@
                 <tbody>
                     <tr each={ portfolio }>
                         <td class="currency">
-                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ currency_data[currency].name } ({ currency_data[currency].symbol })</a>
+                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ data.name } ({ data.symbol })</a>
                         </td>
-                        <td class="price-btc">{ currency_data[currency].quotes.BTC.price }</td>
-                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { significant_figures: 3 }) } { convert }</td>
-                        <td class="change-week"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_7d >= 0, minus: currency_data[currency].quotes[convert].percent_change_7d < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_7d, 2) }%</span></td>
-                        <td class="change-day"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_24h >= 0, minus: currency_data[currency].quotes[convert].percent_change_24h < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_24h, 2) }%</span></td>
+                        <td class="price-btc">{ data.quotes.BTC.price }</td>
+                        <td class="price-jpy">{ number_format(data.quotes[convert].price, 0, { significant_figures: 3 }) } { convert }</td>
+                        <td class="change-week"><span class="{ plus: data.quotes[convert].percent_change_7d >= 0, minus: data.quotes[convert].percent_change_7d < 0 }">{ number_format(data.quotes[convert].percent_change_7d, 2) }%</span></td>
+                        <td class="change-day"><span class="{ plus: data.quotes[convert].percent_change_24h >= 0, minus: data.quotes[convert].percent_change_24h < 0 }">{ number_format(data.quotes[convert].percent_change_24h, 2) }%</span></td>
                         <td class="balance"><input type="number" class="balance-input" value="{ balance }" oninput="{ updateBalance }"></td>
-                        <td class="subtotal">{ number_format(balance * currency_data[currency].quotes[convert].price) } { convert }</td>
-                        <td class="percentage">{ number_format((balance * currency_data[currency].quotes[convert].price) / calculateTotal(portfolio) * 100, 2) }%</td>
+                        <td class="subtotal">{ number_format(balance * data.quotes[convert].price) } { convert }</td>
+                        <td class="percentage">{ number_format((balance * data.quotes[convert].price) / calculateTotal(portfolio) * 100, 2) }%</td>
                         <td class="memo"><input type="text" class="memo-input" value="{ memo }" oninput="{ updateMemo }" autocomplete="off"></td>
                         <td class="delete"><button class="delete-button" onclick={ deletePortfolio }>削除</button></td>
                     </tr>
@@ -77,15 +76,15 @@
                 <tbody>
                     <tr each={ portfolio }>
                         <td class="currency">
-                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ currency_data[currency].symbol }</a>
+                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ data.symbol }</a>
                         </td>
-                        <td class="price-jpy">{ number_format(currency_data[currency].quotes[convert].price, 0, { significant_figures: 3 }) }</td>
-                        <td class="change-day"><span class="{ plus: currency_data[currency].quotes[convert].percent_change_24h >= 0, minus: currency_data[currency].quotes[convert].percent_change_24h < 0 }">{ number_format(currency_data[currency].quotes[convert].percent_change_24h, 2) }%</span></td>
-                        <td class="subtotal">{ number_format(balance * currency_data[currency].quotes[convert].price) }</td>
+                        <td class="price-jpy">{ number_format(data.quotes[convert].price, 0, { significant_figures: 3 }) }</td>
+                        <td class="change-day"><span class="{ plus: data.quotes[convert].percent_change_24h >= 0, minus: data.quotes[convert].percent_change_24h < 0 }">{ number_format(data.quotes[convert].percent_change_24h, 2) }%</span></td>
+                        <td class="subtotal">{ number_format(balance * data.quotes[convert].price) }</td>
                         <td class="detail">
-                            <modal title={ currency_data[currency].symbol + 'の詳細' }
+                            <modal title={ data.symbol + 'の詳細' }
                                    key={ uid }
-                                   data={ currency_data[currency] }
+                                   data={ data }
                                    convert={ convert }
                                    balance={ balance }
                                    memo={ memo }
@@ -493,6 +492,20 @@
             return indexData(data, 'id');;
         }
 
+        function unknownCurrencyData(item) {
+            const symbol = item.symbol || item.currency;
+            return {
+                id:     item.currency,
+                name:   '不明',
+                symbol: symbol,
+                quotes: {
+                    BTC: {},
+                    USD: {},
+                    JPY: {}
+                }
+            };
+        }
+
         function getPortfolioFromSession(sessionManager, currency_data, callback) {
             sessionManager.getSession(function (session) {
                 var portfolio = [];
@@ -502,20 +515,15 @@
 
                     if (!currency) {
                         let key = convertCoinMarketCapToCoinPaprika(item.currency, currency_data);
-                        if (!key) {
-                            const symbol = window.prompt(item.currency + 'が見つかりませんでした。シンボルを入力してください。')
-                            key = convertSymbolToCoinPaprika(symbol, currency_data);
-                        }
                         currency = currency_data[key];
                     }
-
                     if (!currency) {
-                        window.alert(item.currency + 'が見つかりませんでした。')
-                        return;
+                        currency = unknownCurrencyData(item)
                     }
 
                     portfolio.push({
                         uid: generateId(),
+                        data: currency,
                         symbol: currency.symbol,
                         currency: currency.id,
                         balance: item.balance,
@@ -531,15 +539,6 @@
             for (const key of Object.keys(currency_data)) {
                 const suffix = key.split('-').slice(1).join('-');
                 if (cmcName === suffix) {
-                    return key;
-                }
-            }
-            return null;
-        }
-
-        function convertSymbolToCoinPaprika(symbol, currency_data) {
-            for (const key of Object.keys(currency_data)) {
-                if (symbol === currency_data[key].symbol) {
                     return key;
                 }
             }
@@ -584,7 +583,8 @@
             var total = 0;
 
             portfolio.forEach(function (item) {
-                total += item.balance * currency_data[item.currency].quotes[currency || self.convert].price;
+                const data = currency_data[item.currency]
+                total += item.balance * (data ? data.quotes[currency || self.convert].price : 0);
             });
 
             return total;
@@ -596,6 +596,7 @@
 
             this.portfolio.push({
                 uid: generateId(),
+                data: currency,
                 symbol: currency.symbol,
                 currency: currency.id,
                 balance: '',
