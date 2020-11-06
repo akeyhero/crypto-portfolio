@@ -498,11 +498,11 @@
                 id:     item.currency,
                 name:   '不明',
                 symbol: symbol,
-                quotes: {
-                    BTC: {},
-                    USD: {},
-                    JPY: {}
-                }
+                BTC:    NaN,
+                USD:    NaN,
+                JPY:    NaN,
+                '7d':   NaN,
+                '24h':  NaN
             };
         }
 
@@ -513,6 +513,10 @@
                 session.portfolio.forEach(function (item) {
                     var currency = currency_data[item.currency];
 
+                    if (!currency) {
+                        let key = convertCoinPaprikaToCoinGecko(item.currency, currency_data);
+                        currency = currency_data[key];
+                    }
                     if (!currency) {
                         let key = convertCoinMarketCapToCoinPaprika(item.currency, currency_data);
                         currency = currency_data[key];
@@ -533,6 +537,10 @@
 
                 callback(portfolio.sort(sortBySymbol));
             });
+        }
+
+        function convertCoinPaprikaToCoinGecko(paprikaName, currency_data) {
+            return paprikaName.split('-').slice(1).join('-')
         }
 
         function convertCoinMarketCapToCoinPaprika(cmcName, currency_data) {
