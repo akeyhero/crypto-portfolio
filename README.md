@@ -21,3 +21,12 @@ service cloud.firestore {
   }
 }
 ```
+
+# デプロイ
+
+Could Run にデプロイする手順は以下の通り
+
+```bash
+$ gcloud builds submit --tag="asia.gcr.io/${PROJECT_ID}/crypto-portfolio" --project="${PROJECT_ID}"
+$ gcloud run deploy --image="asia.gcr.io/${PROJECT_ID}/crypto-portfolio" --port=80 --cpu=1 --memory=128Mi --platform=managed --region=asia-northeast1 --project="${PROJECT_ID}"
+```
