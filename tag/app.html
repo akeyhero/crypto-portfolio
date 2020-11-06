@@ -7,7 +7,7 @@
         </div>
         <ul>
             <li each={ getCurrencyList() } onclick={ addPortfolio }>
-                { name } ({ symbol })
+                { name } ({ symbol.toUpperCase() })
             </li>
         </ul>
     </div>
@@ -36,15 +36,15 @@
                 <tbody>
                     <tr each={ portfolio }>
                         <td class="currency">
-                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ data.name } ({ data.symbol })</a>
+                            <a href="https://www.coingecko.com/en/coins/{ currency }" target="_blank" rel="noreferrer noopener">{ data.name } ({ data.symbol.toUpperCase() })</a>
                         </td>
-                        <td class="price-btc">{ data.quotes.BTC.price }</td>
-                        <td class="price-jpy">{ number_format(data.quotes[convert].price, 0, { significant_figures: 3 }) } { convert }</td>
-                        <td class="change-week"><span class="{ plus: data.quotes[convert].percent_change_7d >= 0, minus: data.quotes[convert].percent_change_7d < 0 }">{ number_format(data.quotes[convert].percent_change_7d, 2) }%</span></td>
-                        <td class="change-day"><span class="{ plus: data.quotes[convert].percent_change_24h >= 0, minus: data.quotes[convert].percent_change_24h < 0 }">{ number_format(data.quotes[convert].percent_change_24h, 2) }%</span></td>
+                        <td class="price-btc">{ number_format(data.BTC, 8) }</td>
+                        <td class="price-jpy">{ number_format(data[convert], 2, { significant_figures: 3 }) } { convert }</td>
+                        <td class="change-week"><span class="{ plus: data['7d'] >= 0, minus: data['7d'] < 0 }">{ number_format(data['7d'], 2) }%</span></td>
+                        <td class="change-day"><span class="{ plus: data['24h'] >= 0, minus: data['24h'] < 0 }">{ number_format(data['24h'], 2) }%</span></td>
                         <td class="balance"><input type="number" class="balance-input" value="{ balance }" oninput="{ updateBalance }"></td>
-                        <td class="subtotal">{ number_format(balance * data.quotes[convert].price) } { convert }</td>
-                        <td class="percentage">{ number_format((balance * data.quotes[convert].price) / calculateTotal(portfolio) * 100, 2) }%</td>
+                        <td class="subtotal">{ number_format(balance * data[convert]) } { convert }</td>
+                        <td class="percentage">{ number_format((balance * data[convert]) / calculateTotal(portfolio) * 100, 2) }%</td>
                         <td class="memo"><input type="text" class="memo-input" value="{ memo }" oninput="{ updateMemo }" autocomplete="off"></td>
                         <td class="delete"><button class="delete-button" onclick={ deletePortfolio }>削除</button></td>
                     </tr>
@@ -76,11 +76,11 @@
                 <tbody>
                     <tr each={ portfolio }>
                         <td class="currency">
-                            <a href="https://coinpaprika.com/coin/{ currency }/" target="_blank" rel="noreferrer noopener">{ data.symbol }</a>
+                            <a href="https://www.coingecko.com/en/coins/{ currency }" target="_blank" rel="noreferrer noopener">{ data.name } ({ data.symbol.toUpperCase() })</a>
                         </td>
-                        <td class="price-jpy">{ number_format(data.quotes[convert].price, 0, { significant_figures: 3 }) }</td>
-                        <td class="change-day"><span class="{ plus: data.quotes[convert].percent_change_24h >= 0, minus: data.quotes[convert].percent_change_24h < 0 }">{ number_format(data.quotes[convert].percent_change_24h, 2) }%</span></td>
-                        <td class="subtotal">{ number_format(balance * data.quotes[convert].price) }</td>
+                        <td class="price-jpy">{ number_format(data[convert], 0, { significant_figures: 3 }) }</td>
+                        <td class="change-day"><span class="{ plus: data['24h'] >= 0, minus: data['24h'] < 0 }">{ number_format(data['24h'], 2) }%</span></td>
+                        <td class="subtotal">{ number_format(balance * data[convert]) }</td>
                         <td class="detail">
                             <modal title={ data.symbol + 'の詳細' }
                                    key={ uid }
@@ -92,23 +92,23 @@
                                 <table>
                                     <tr>
                                         <th>価格(BTC)</th>
-                                        <td class="price-btc">{ opts.data.quotes.BTC.price }</td>
+                                        <td class="price-btc">{ opts.data.BTC }</td>
                                     </tr>
                                     <tr>
                                         <th>価格({ opts.convert })</th>
-                                        <td class="price-jpy">{ number_format(opts.data.quotes[opts.convert].price, 0, { significant_figures: 3 }) }</td>
+                                        <td class="price-jpy">{ number_format(opts.data[opts.convert], 0, { significant_figures: 3 }) }</td>
                                     </tr>
                                     <tr>
                                         <th>上昇率(7日間)</th>
-                                        <td class="change-week"><span class="{ plus: opts.data.quotes[opts.convert].percent_change_7d >= 0, minus: opts.data.quotes[opts.convert].percent_change_7d < 0 }">{ number_format(opts.data.quotes[opts.convert].percent_change_7d, 2) }%</span></td>
+                                        <td class="change-week"><span class="{ plus: opts.data['7d'] >= 0, minus: opts.data['7d'] < 0 }">{ number_format(opts.data['7d'], 2) }%</span></td>
                                     </tr>
                                     <tr>
                                         <th>上昇率(24時間)</th>
-                                        <td class="change-day"><span class="{ plus: opts.data.quotes[opts.convert].percent_change_24h >= 0, minus: opts.data.quotes[opts.convert].percent_change_24h < 0 }">{ number_format(opts.data.quotes[opts.convert].percent_change_24h, 2) }%</span></td>
+                                        <td class="change-day"><span class="{ plus: opts.data['24h'] >= 0, minus: opts.data['24h'] < 0 }">{ number_format(opts.data['24h'], 2) }%</span></td>
                                     </tr>
                                     <tr>
                                         <th>資産割合</th>
-                                        <td class="percentage">{ number_format((opts.balance * opts.data.quotes[opts.convert].price) / parent.calculateTotal(parent.portfolio) * 100, 2) }%</td>
+                                        <td class="percentage">{ number_format((opts.balance * opts.data[opts.convert]) / parent.calculateTotal(parent.portfolio) * 100, 2) }%</td>
                                     </tr>
                                     <tr>
                                         <th>保有枚数</th>
@@ -145,10 +145,10 @@
         </div>
         <p>
             <small>※幻想計算機は<a href="https://github.com/arahaya/crypto-portfolio" target="_blank">赤字計算機</a>をベースに作成しています。</small><br>
-            <small>※coinpaprika.com掲載の通貨に対応しています。</small><br>
+            <small>※coingecko.comに掲載されている通貨の上位1,000件に対応しています。</small><br>
             <small>※レートは30秒程度で更新されます。</small><br>
             <small>※オフラインモードでは、入力された内容はブラウザのローカルストレージに保管され、サーバには送信されません。</small><br>
-            利用API： <a href="https://coinpaprika.com" target="_blank">coinpaprika.com</a><br>
+            利用API： <a href="https://www.coingecko.com/api/documentations/v3" target="_blank">coingecko.com</a><br>
             ソース: <a href="https://github.com/akeyhero/crypto-portfolio" target="_blank">github</a>
         </p>
     </main>
@@ -584,7 +584,7 @@
 
             portfolio.forEach(function (item) {
                 const data = currency_data[item.currency]
-                total += item.balance * (data ? data.quotes[currency || self.convert].price : 0);
+                total += item.balance * (data ? data[(currency || self.convert).toUpperCase()] : 0);
             });
 
             return total;
@@ -638,7 +638,7 @@
                 var headers = {
                     'X-Requested-With': 'XMLHttpRequest'
                 };
-                fetch('/?format=json&convert=' + self.convert, {headers: headers})
+                fetch('./?format=json&convert=' + self.convert, {headers: headers})
                     .then(function (response) {
                         return response.json();
                     })
